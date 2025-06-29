@@ -1,0 +1,285 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <title>ระบายสีวันสุนทรภู่</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; }
+    #gallery { margin: 10px; display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; }
+    #gallery img { width: 80px; height: auto; border: 2px solid transparent; cursor: pointer; }
+    #gallery img.selected { border-color: blue; }
+    canvas { border: 1px solid #ccc; cursor: crosshair; display: block; margin: 10px auto; max-width: 95vw; height: auto; }
+    .tools { margin: 10px; }
+    .color-btn { display: inline-block; width: 36px; height: 36px; margin: 0 5px; border: 2px solid #444; cursor: pointer; border-radius: 4px; }
+    .color-btn.selected { border: 4px solid #000; }
+    .tool-btn { padding: 6px 12px; margin: 0 5px; cursor: pointer; border: 1px solid #444; border-radius: 4px; background: #eee; }
+    .tool-btn.selected { background: #bbb; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>ระบายสีวันสุนทรภู่ 🎨</h1>
+
+  <div id="gallery">
+    <img src="img1.jpg" class="selected" onclick="selectImage(this)">
+    <img src="img2.jpg" onclick="selectImage(this)">
+    <img src="img3.jpg" onclick="selectImage(this)">
+    <img src="img4.jpg" onclick="selectImage(this)">
+    <img src="img5.jpg" onclick="selectImage(this)">
+    <img src="img6.jpg" onclick="selectImage(this)">
+    <img src="img7.jpg" onclick="selectImage(this)">
+    <img src="img8.jpg" onclick="selectImage(this)">
+    <img src="img9.jpg" onclick="selectImage(this)">
+    <img src="img10.jpg" onclick="selectImage(this)">
+  </div>
+
+  <div class="tools">
+    <div>
+      เครื่องมือ:
+      <button class="tool-btn selected" onclick="selectTool('brush', this)">แปรง</button>
+      <button class="tool-btn" onclick="selectTool('fill', this)">ถังสี</button>
+    </div>
+    <div style="margin-top:8px;">
+      เลือกสี:
+      <div id="colorPalette" style="display:inline-block; vertical-align: middle;">
+        <div class="color-btn selected" style="background:#FF0000;" onclick="selectColor('#FF0000', this)"></div> <div class="color-btn" style="background:#00FF00;" onclick="selectColor('#00FF00', this)"></div> <div class="color-btn" style="background:#0000FF;" onclick="selectColor('#0000FF', this)"></div> <div class="color-btn" style="background:#FFFF00;" onclick="selectColor('#FFFF00', this)"></div> <div class="color-btn" style="background:#FFA500;" onclick="selectColor('#FFA500', this)"></div> <div class="color-btn" style="background:#800080;" onclick="selectColor('#800080', this)"></div> <div class="color-btn" style="background:#00FFFF;" onclick="selectColor('#00FFFF', this)"></div> <div class="color-btn" style="background:#FFC0CB;" onclick="selectColor('#FFC0CB', this)"></div> <div class="color-btn" style="background:#A52A2A;" onclick="selectColor('#A52A2A', this)"></div> <div class="color-btn" style="background:#808080;" onclick="selectColor('#808080', this)"></div> <div class="color-btn" style="background:#9370DB;" onclick="selectColor('#9370DB', this)"></div> <div class="color-btn" style="background:#87CEEB;" onclick="selectColor('#87CEEB', this)"></div> <div class="color-btn" style="background:#FF1493;" onclick="selectColor('#FF1493', this)"></div> <div class="color-btn" style="background:#006400;" onclick="selectColor('#006400', this)"></div> <div class="color-btn" style="background:#FFFFA0;" onclick="selectColor('#FFFFA0', this)"></div> <div class="color-btn" style="background:#000000;" onclick="selectColor('#000000', this)"></div> </div>
+    </div>
+    <div style="margin-top:8px;">
+      ขนาดแปรง: <input type="range" id="brushSize" min="1" max="30" value="5">
+    </div>
+    <button onclick="clearDrawing()">ล้างสี</button>
+    <button onclick="saveImage()">บันทึกภาพ</button>
+  </div>
+
+  <canvas id="canvas" width="800" height="600"></canvas>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let painting = false;
+    let currentColor = '#FF0000'; // สีเริ่มต้นเป็นสีแดง
+    let currentTool = 'brush';
+    let currentImage = new Image();
+
+    currentImage.crossOrigin = 'anonymous'; 
+
+    currentImage.src = document.querySelector('#gallery img.selected').src;
+    currentImage.onload = () => {
+      ctx.drawImage(currentImage, 0, 0, canvas.width, canvas.height);
+      console.log('Initial image loaded and drawn onto canvas successfully.');
+    };
+    currentImage.onerror = (e) => {
+        console.error('Failed to load image from:', currentImage.src, e);
+        alert('ไม่สามารถโหลดรูปภาพได้! ตรวจสอบชื่อไฟล์และที่อยู่ของรูปภาพในโค้ด HTML');
+    };
+
+
+    function selectTool(tool, btn) {
+      currentTool = tool;
+      document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      canvas.style.cursor = (tool === 'brush') ? 'crosshair' : 'pointer';
+    }
+
+    function selectColor(color, btn) {
+      currentColor = color;
+      document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    }
+
+    function selectImage(img) {
+      document.querySelectorAll('#gallery img').forEach(i => i.classList.remove('selected'));
+      img.classList.add('selected');
+      currentImage.src = img.src;
+      currentImage.onload = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(currentImage, 0, 0, canvas.width, canvas.height);
+        console.log('New image loaded and drawn onto canvas:', img.src);
+      };
+       currentImage.onerror = (e) => {
+        console.error('Failed to load image from:', currentImage.src, e);
+        alert('ไม่สามารถโหลดรูปภาพได้! ตรวจสอบชื่อไฟล์และที่อยู่ของรูปภาพ');
+    };
+    }
+
+    canvas.addEventListener('mousedown', (e) => {
+      if (!currentImage.complete || currentImage.naturalWidth === 0) {
+        console.warn('Image not fully loaded or drawn yet. Please wait.');
+        return;
+      }
+
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const x = Math.floor((e.clientX - rect.left) * scaleX);
+      const y = Math.floor((e.clientY - rect.top) * scaleY);
+
+      if (currentTool === 'brush') {
+        painting = true;
+        ctx.beginPath();
+        ctx.moveTo(e.offsetX, e.offsetY);
+      } else if (currentTool === 'fill') {
+        const fillColorRgb = hexToRgb(currentColor);
+        fillColorRgb.a = 255;
+        console.log('Attempting to fill at X:', x, 'Y:', y);
+        console.log('Fill color (RGBA):', fillColorRgb);
+
+        floodFill(x, y, fillColorRgb);
+      }
+    });
+
+    canvas.addEventListener('mouseup', () => {
+      painting = false;
+      ctx.beginPath();
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      if (!painting || currentTool !== 'brush') return;
+      const brushSize = document.getElementById('brushSize').value;
+      ctx.lineWidth = brushSize;
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = currentColor;
+      ctx.lineTo(e.offsetX, e.offsetY);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(e.offsetX, e.offsetY);
+    });
+
+    function clearDrawing() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(currentImage, 0, 0, canvas.width, canvas.height);
+      console.log('Canvas cleared and original image redrawn.');
+    }
+
+    function saveImage() {
+      const link = document.createElement('a');
+      link.download = 'coloring.jpg';
+      try {
+        link.href = canvas.toDataURL('image/jpeg');
+        link.click();
+      } catch (error) {
+        console.error("Error saving image (may be due to CORS or image not fully loaded):", error);
+        alert("ไม่สามารถบันทึกรูปภาพได้ อาจเกิดจากข้อจำกัดด้านความปลอดภัยหรือรูปภาพยังโหลดไม่สมบูรณ์");
+      }
+    }
+
+    function hexToRgb(hex) {
+      const bigint = parseInt(hex.slice(1), 16);
+      return {
+        r: (bigint >> 16) & 255,
+        g: (bigint >> 8) & 255,
+        b: bigint & 255
+      };
+    }
+
+    const COLOR_MATCH_TOLERANCE = 45;
+
+    function colorMatch(a, b, tolerance = COLOR_MATCH_TOLERANCE) {
+        return Math.abs(a.r - b.r) <= tolerance &&
+               Math.abs(a.g - b.g) <= tolerance &&
+               Math.abs(a.b - b.b) <= tolerance &&
+               Math.abs(a.a - b.a) <= tolerance;
+    }
+
+    // --- START: อัลกอริทึมถังสีประสิทธิภาพสูง (Scanline Flood Fill) ---
+    function floodFill(startX, startY, fillColor) {
+      console.log('Starting flood fill with startX:', startX, 'startY:', startY);
+      
+      if (startX < 0 || startX >= canvas.width || startY < 0 || startY >= canvas.height) {
+        console.warn('Flood fill aborted: Click position is out of canvas bounds.');
+        return;
+      }
+
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+      const width = imageData.width;
+      const height = imageData.height;
+
+      const startPos = (startY * width + startX) * 4;
+      const startColor = {
+        r: data[startPos],
+        g: data[startPos + 1],
+        b: data[startPos + 2],
+        a: data[startPos + 3]
+      };
+
+      console.log('Clicked pixel color (RGBA):', startColor);
+
+      if (colorMatch(startColor, fillColor) || startColor.a === 0) {
+        console.warn('Flood fill aborted: Already target color or transparent area clicked.');
+        return;
+      }
+
+      const stack = [[startX, startY]];
+      const processed = new Uint8Array(width * height);
+      let pixelsFilledCount = 0;
+
+      while (stack.length > 0) {
+        const [x, y] = stack.pop();
+
+        if (x < 0 || x >= width || y < 0 || y >= height || processed[y * width + x] === 1) {
+            continue;
+        }
+
+        let currentX = x;
+        
+        while (currentX >= 0 && colorMatch(
+            {r: data[(y * width + currentX) * 4], g: data[(y * width + currentX) * 4 + 1], b: data[(y * width + currentX) * 4 + 2], a: data[(y * width + currentX) * 4 + 3]},
+            startColor
+        ) && processed[y * width + currentX] === 0) {
+          currentX--;
+        }
+        currentX++; 
+
+        let spanAbove = false;
+        let spanBelow = false;
+
+        while (currentX < width && colorMatch(
+            {r: data[(y * width + currentX) * 4], g: data[(y * width + currentX) * 4 + 1], b: data[(y * width + currentX) * 4 + 2], a: data[(y * width + currentX) * 4 + 3]},
+            startColor
+        ) && processed[y * width + currentX] === 0) {
+          
+          const pixelIndex = (y * width + currentX) * 4;
+          data[pixelIndex] = fillColor.r;
+          data[pixelIndex + 1] = fillColor.g;
+          data[pixelIndex + 2] = fillColor.b;
+          data[pixelIndex + 3] = fillColor.a;
+
+          processed[y * width + currentX] = 1;
+          pixelsFilledCount++;
+
+          if (y > 0) {
+            const indexAbove = (y - 1) * width + currentX;
+            const aboveColor = {r: data[indexAbove * 4], g: data[indexAbove * 4 + 1], b: data[indexAbove * 4 + 2], a: data[indexAbove * 4 + 3]};
+            
+            if (colorMatch(aboveColor, startColor) && processed[indexAbove] === 0) {
+              if (!spanAbove) {
+                stack.push([currentX, y - 1]);
+                spanAbove = true;
+              }
+            } else {
+              spanAbove = false;
+            }
+          }
+
+          if (y < height - 1) {
+            const indexBelow = (y + 1) * width + currentX;
+            const belowColor = {r: data[indexBelow * 4], g: data[indexBelow * 4 + 1], b: data[indexBelow * 4 + 2], a: data[indexBelow * 4 + 3]};
+            
+            if (colorMatch(belowColor, startColor) && processed[indexBelow] === 0) {
+              if (!spanBelow) {
+                stack.push([currentX, y + 1]);
+                spanBelow = true;
+              }
+            } else {
+              spanBelow = false;
+            }
+          }
+          currentX++;
+        }
+      }
+      ctx.putImageData(imageData, 0, 0);
+      console.log('Flood fill complete. Pixels filled:', pixelsFilledCount);
+    }
+    // --- END: อัลกอริทึมถังสีประสิทธิภาพสูง ---
+  </script>
+</body>
+</html>
