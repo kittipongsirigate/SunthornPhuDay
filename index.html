@@ -1,18 +1,111 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
   <title>ระบายสีวันสุนทรภู่</title>
   <style>
-    body { font-family: sans-serif; text-align: center; }
-    #gallery { margin: 10px; display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; }
-    #gallery img { width: 80px; height: auto; border: 2px solid transparent; cursor: pointer; }
-    #gallery img.selected { border-color: blue; }
-    canvas { border: 1px solid #ccc; cursor: crosshair; display: block; margin: 10px auto; max-width: 95vw; height: auto; }
-    .tools { margin: 10px; }
-    .color-btn { display: inline-block; width: 36px; height: 36px; margin: 0 5px; border: 2px solid #444; cursor: pointer; border-radius: 4px; }
-    .color-btn.selected { border: 4px solid #000; }
-    .tool-btn { padding: 6px 12px; margin: 0 5px; cursor: pointer; border: 1px solid #444; border-radius: 4px; background: #eee; }
-    .tool-btn.selected { background: #bbb; font-weight: bold; }
+    body { 
+        font-family: sans-serif; 
+        text-align: center; 
+        background-color: #f0f0f0; /* สีพื้นหลัง */
+        margin: 0;
+        padding: 20px;
+    }
+    h1 {
+        color: #333;
+        margin-bottom: 20px;
+    }
+    #gallery { 
+        margin: 10px auto 20px auto; 
+        display: flex; 
+        flex-wrap: wrap; 
+        justify-content: center; 
+        gap: 10px; /* เพิ่มระยะห่างระหว่างรูป */
+        max-width: 900px;
+    }
+    #gallery img { 
+        width: 100px; /* เพิ่มขนาดรูป thumbnail */
+        height: auto; 
+        border: 3px solid transparent; /* เพิ่มขนาดขอบ */
+        cursor: pointer; 
+        border-radius: 8px; /* ขอบมน */
+        transition: all 0.2s ease-in-out; /* smooth transition */
+    }
+    #gallery img:hover {
+        transform: scale(1.05); /* effect เมื่อชี้ */
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    #gallery img.selected { 
+        border-color: #007bff; /* สีน้ำเงินสว่างเมื่อเลือก */
+        box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+    }
+    canvas { 
+        border: 2px solid #ccc; /* เพิ่มขนาดขอบ canvas */
+        cursor: crosshair; 
+        display: block; 
+        margin: 10px auto; 
+        max-width: 95vw; 
+        height: auto; 
+        background-color: #fff;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        border-radius: 8px;
+    }
+    .tools { 
+        margin: 20px auto; 
+        padding: 15px;
+        background-color: #e9ecef; /* สีพื้นหลัง tools */
+        border-radius: 10px;
+        max-width: 800px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .tools > div {
+        margin-bottom: 10px;
+    }
+    .color-btn { 
+        display: inline-block; 
+        width: 45px; /* ขนาดใหญ่ขึ้น */
+        height: 45px; /* ขนาดใหญ่ขึ้น */
+        margin: 0 6px; 
+        border: 3px solid #666; /* เพิ่มขนาดขอบสี */
+        cursor: pointer; 
+        border-radius: 50%; /* วงกลม */
+        transition: all 0.15s ease-in-out;
+    }
+    .color-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 0 8px rgba(0,0,0,0.3);
+    }
+    .color-btn.selected { 
+        border: 5px solid #000; /* ขอบหนาขึ้นเมื่อเลือก */
+        box-shadow: 0 0 12px rgba(0, 0, 0, 0.5);
+    }
+    .tool-btn, button { 
+        padding: 10px 20px; /* เพิ่ม padding ให้ปุ่มใหญ่ขึ้น */
+        margin: 0 8px; 
+        cursor: pointer; 
+        border: 1px solid #007bff; /* สีขอบปุ่ม */
+        border-radius: 5px; 
+        background: #007bff; /* สีพื้นหลังปุ่ม */
+        color: white; /* สีตัวอักษรปุ่ม */
+        font-size: 18px; /* เพิ่มขนาด font */
+        font-weight: bold;
+        transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+    }
+    .tool-btn:hover, button:hover {
+        background: #0056b3; /* สีเข้มขึ้นเมื่อ hover */
+        border-color: #0056b3;
+        transform: translateY(-2px);
+    }
+    .tool-btn.selected { 
+        background: #0056b3; 
+        border-color: #004085;
+        box-shadow: inset 0 0 8px rgba(0,0,0,0.3); /* เงาด้านใน */
+    }
+    input[type="range"] {
+        width: 150px;
+        margin-left: 10px;
+        vertical-align: middle;
+        cursor: grab;
+    }
   </style>
 </head>
 <body>
@@ -34,16 +127,14 @@
   <div class="tools">
     <div>
       เครื่องมือ:
-      <button class="tool-btn selected" onclick="selectTool('brush', this)">แปรง</button>
+      <button class="tool-btn" onclick="selectTool('brush', this)">แปรง</button>
       <button class="tool-btn" onclick="selectTool('fill', this)">ถังสี</button>
     </div>
-    <div style="margin-top:8px;">
-      เลือกสี:
+    <div style="margin-top:15px;"> เลือกสี:
       <div id="colorPalette" style="display:inline-block; vertical-align: middle;">
         <div class="color-btn selected" style="background:#FF0000;" onclick="selectColor('#FF0000', this)"></div> <div class="color-btn" style="background:#00FF00;" onclick="selectColor('#00FF00', this)"></div> <div class="color-btn" style="background:#0000FF;" onclick="selectColor('#0000FF', this)"></div> <div class="color-btn" style="background:#FFFF00;" onclick="selectColor('#FFFF00', this)"></div> <div class="color-btn" style="background:#FFA500;" onclick="selectColor('#FFA500', this)"></div> <div class="color-btn" style="background:#800080;" onclick="selectColor('#800080', this)"></div> <div class="color-btn" style="background:#00FFFF;" onclick="selectColor('#00FFFF', this)"></div> <div class="color-btn" style="background:#FFC0CB;" onclick="selectColor('#FFC0CB', this)"></div> <div class="color-btn" style="background:#A52A2A;" onclick="selectColor('#A52A2A', this)"></div> <div class="color-btn" style="background:#808080;" onclick="selectColor('#808080', this)"></div> <div class="color-btn" style="background:#9370DB;" onclick="selectColor('#9370DB', this)"></div> <div class="color-btn" style="background:#87CEEB;" onclick="selectColor('#87CEEB', this)"></div> <div class="color-btn" style="background:#FF1493;" onclick="selectColor('#FF1493', this)"></div> <div class="color-btn" style="background:#006400;" onclick="selectColor('#006400', this)"></div> <div class="color-btn" style="background:#FFFFA0;" onclick="selectColor('#FFFFA0', this)"></div> <div class="color-btn" style="background:#000000;" onclick="selectColor('#000000', this)"></div> </div>
     </div>
-    <div style="margin-top:8px;">
-      ขนาดแปรง: <input type="range" id="brushSize" min="1" max="30" value="5">
+    <div style="margin-top:15px;"> ขนาดแปรง: <input type="range" id="brushSize" min="1" max="30" value="5">
     </div>
     <button onclick="clearDrawing()">ล้างสี</button>
     <button onclick="saveImage()">บันทึกภาพ</button>
@@ -56,15 +147,21 @@
     const ctx = canvas.getContext('2d');
     let painting = false;
     let currentColor = '#FF0000'; // สีเริ่มต้นเป็นสีแดง
-    let currentTool = 'brush';
+    let currentTool = 'fill'; // ตั้งค่าเริ่มต้นให้ถังสีเป็น default
     let currentImage = new Image();
 
     currentImage.crossOrigin = 'anonymous'; 
 
+    // โหลดรูปภาพเริ่มต้นลงบน Canvas
+    // และเลือกปุ่มถังสีเป็น default
     currentImage.src = document.querySelector('#gallery img.selected').src;
     currentImage.onload = () => {
       ctx.drawImage(currentImage, 0, 0, canvas.width, canvas.height);
       console.log('Initial image loaded and drawn onto canvas successfully.');
+      
+      // เรียก selectTool เพื่อตั้งค่าเริ่มต้นให้ปุ่ม "ถังสี" ถูกเลือก
+      // document.querySelector('.tool-btn:nth-child(2)') คือการเลือกปุ่มถังสี
+      selectTool('fill', document.querySelector('.tool-btn:nth-child(2)')); 
     };
     currentImage.onerror = (e) => {
         console.error('Failed to load image from:', currentImage.src, e);
@@ -150,13 +247,40 @@
     }
 
     function saveImage() {
+      const studentName = prompt("โปรดพิมพ์ชื่อนักเรียน (เช่น: เด็กชายสมศักดิ์):");
+
+      if (studentName === null || studentName.trim() === "") {
+        alert("ไม่ได้บันทึกรูปภาพ เนื่องจากไม่ได้ระบุชื่อ");
+        return; 
+      }
+
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = canvas.width;
+      tempCanvas.height = canvas.height;
+      const tempCtx = tempCanvas.getContext('2d');
+
+      tempCtx.drawImage(canvas, 0, 0);
+
+      tempCtx.font = 'bold 30px Arial'; 
+      tempCtx.fillStyle = '#000000'; 
+      tempCtx.textAlign = 'center'; 
+      tempCtx.textBaseline = 'bottom'; 
+
+      const textMarginBottom = 43; // ค่าที่ปรับแล้ว
+      const textX = tempCanvas.width / 2; 
+      const textY = tempCanvas.height - textMarginBottom; 
+
+      tempCtx.fillText(studentName, textX, textY);
+      console.log('Added student name to temporary canvas:', studentName);
+
       const link = document.createElement('a');
-      link.download = 'coloring.jpg';
+      link.download = `ระบายสี_${studentName.replace(/\s/g, '_')}.jpg`; 
       try {
-        link.href = canvas.toDataURL('image/jpeg');
+        link.href = tempCanvas.toDataURL('image/jpeg', 0.9);
         link.click();
+        console.log('Image saved successfully with name.');
       } catch (error) {
-        console.error("Error saving image (may be due to CORS or image not fully loaded):", error);
+        console.error("Error saving image:", error);
         alert("ไม่สามารถบันทึกรูปภาพได้ อาจเกิดจากข้อจำกัดด้านความปลอดภัยหรือรูปภาพยังโหลดไม่สมบูรณ์");
       }
     }
@@ -175,7 +299,7 @@
     function colorMatch(a, b, tolerance = COLOR_MATCH_TOLERANCE) {
         return Math.abs(a.r - b.r) <= tolerance &&
                Math.abs(a.g - b.g) <= tolerance &&
-               Math.abs(a.b - b.b) <= tolerance &&
+               Math.abs(a.b - b.b) <= tolerance && 
                Math.abs(a.a - b.a) <= tolerance;
     }
 
